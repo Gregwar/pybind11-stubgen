@@ -581,14 +581,9 @@ class PropertyStubsGenerator(StubsGenerator):
         docstring = self.sanitize_docstring(self.prop.__doc__)
         rtype = self.signature.rtype
         if rtype == "None":
-            parts = docstring.split(" ")
-            last_part = parts[-1]
-            if len(last_part) > 2:
-                if last_part[0] == "[" and last_part[-1] == "]":
-                    rtype = last_part[1:-1]
-                    del parts[-1]
-            docstring = " ".join(parts)
-
+            match = re.match(r"(.*)\(returns: (.+)\)(.*)", docstring)
+            if match:
+                rtype = match.group(2)
         docstring_prop = "\n\n".join([docstring, ":type: {rtype}".format(rtype=rtype)])
 
         result = ["@property",
