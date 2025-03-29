@@ -586,7 +586,6 @@ class PropertyStubsGenerator(StubsGenerator):
             if len(last_part) > 2:
                 if last_part[0] == "[" and last_part[-1] == "]":
                     rtype = last_part[1:-1]
-                    print("Found type: "+rtype)
                     del parts[-1]
             docstring = " ".join(parts)
 
