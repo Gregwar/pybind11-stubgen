@@ -579,16 +579,27 @@ class PropertyStubsGenerator(StubsGenerator):
     def to_lines(self):  # type: () -> List[str]
 
         docstring = self.sanitize_docstring(self.prop.__doc__)
-        docstring_prop = "\n\n".join([docstring, ":type: {rtype}".format(rtype=self.signature.rtype)])
+        rtype = self.signature.rtype
+        if rtype == "None":
+            parts = docstring.split(" ")
+            last_part = parts[-1]
+            if len(last_part) > 2:
+                if last_part[0] == "[" and last_part[-1] == "]":
+                    rtype = last_part[1:-1]
+                    print("Found type: "+rtype)
+                    del parts[-1]
+            docstring = " ".join(parts)
+
+        docstring_prop = "\n\n".join([docstring, ":type: {rtype}".format(rtype=rtype)])
 
         result = ["@property",
-                  "def {field_name}(self) -> {rtype}:".format(field_name=self.name, rtype=self.signature.rtype),
+                  "def {field_name}(self) -> {rtype}:".format(field_name=self.name, rtype=rtype),
                   self.format_docstring(docstring_prop)]
 
         if self.signature.setter_args != "None":
             result.append("@{field_name}.setter".format(field_name=self.name))
             result.append(
-                "def {field_name}({args}) -> None:".format(field_name=self.name, args=self.signature.setter_args))
+                "def {field_name}({args}) -> {rtype}:".format(field_name=self.name, args=self.signature.setter_args), rtype=rtype)
             if docstring:
                 result.append(self.format_docstring(docstring))
             else:
